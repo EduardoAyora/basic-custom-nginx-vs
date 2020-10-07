@@ -1,0 +1,92 @@
+server {
+
+	listen 80 default_server;
+	listen [::]:80 default_server;
+
+	root /var/www/html;
+
+	index index.html index.htm index.nginx-debian.html;
+
+	server_name _;
+
+	 
+	location / {
+		try_files $uri $uri/ =404;
+	}
+
+}
+
+server {
+
+        
+        server_name eduardoayora.com www.eduardoayora.com;
+
+	location /menu/ { 
+		
+		proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header Host $http_host;
+                proxy_set_header X-NginX-Proxy true;
+                proxy_pass http://localhost:1000/;
+                proxy_redirect off;
+    	}
+
+	location /socket.io/ {
+		
+		proxy_pass http://localhost:1000;
+		proxy_http_version 1.1;
+		proxy_set_header Upgrade $http_upgrade;
+		proxy_set_header Connection 'upgrade';
+		proxy_set_header Host $host;
+		proxy_cache_bypass $http_upgrade;
+
+        } 
+
+	location / { 
+        	proxy_set_header X-Real-IP $remote_addr;
+        	proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; 
+        	proxy_set_header Host $http_host;
+        	proxy_set_header X-NginX-Proxy true; 
+        	proxy_pass http://localhost:3000/;
+        	proxy_redirect off;
+    	} 
+
+}
+
+server {
+        
+        server_name imporprima.com www.imporprima.com;
+
+	root /var/www/html/imporprima.com;
+	index index.php index.html index.htm;
+
+	location / {
+		try_files $uri $uri/ /index.php?$args;
+	}
+
+	location ~ \.php$ {
+		try_files $uri =404;
+		fastcgi_split_path_info ^(.+\.php)(/.+)$;
+		fastcgi_pass unix:/var/run/php/php7.2-fpm.sock;
+		fastcgi_index index.php;
+		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+		include fastcgi_params;
+		
+	}
+
+}
+
+server {
+        
+        server_name consmontenegro.com www.consmontenegro.com;
+
+	root /var/www/consmontenegro.com/public_html;
+	index index.html;
+
+	location / {
+		try_files $uri $uri/ =404;
+	}
+
+}
+
+
